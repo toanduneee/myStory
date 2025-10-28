@@ -2,21 +2,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Lato:ital,wght@0,400;0,700;1,400&display=swap');
 
 @font-face {
-  font-family: 'ArcadeAmong';
-  src: url('/fonts/arcade-among-2.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'ArcadeAmong';
+    src: url('/fonts/arcade-among-2.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }
 
 /* --- Bảng màu Dark Mode --- */
 :root {
-    --dark-bg: #282c34;       /* Màu nền chính */
-    --dark-bg-alt: #21252b;   /* Màu nền phụ */
-    --light-text: #abb2bf;    /* Màu chữ chính */
-    --title-text: #ffffff;    /* Màu chữ cho tiêu đề */
-    --link-color: #61afef;    /* Màu cho liên kết */
-    --accent-color: #56d0c4;  /* Màu nhấn */
-    --border-color: #3e4451;  /* Màu cho đường viền */
+    --dark-bg: #282c34;
+    /* Màu nền chính */
+    --dark-bg-alt: #21252b;
+    /* Màu nền phụ */
+    --light-text: #abb2bf;
+    /* Màu chữ chính */
+    --title-text: #ffffff;
+    /* Màu chữ cho tiêu đề */
+    --link-color: #61afef;
+    /* Màu cho liên kết */
+    --accent-color: #56d0c4;
+    /* Màu nhấn */
+    --border-color: #3e4451;
+    /* Màu cho đường viền */
 }
 
 * {
@@ -36,7 +43,9 @@ body {
     flex-direction: column;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     font-family: 'ArcadeAmong', sans-serif;
     font-weight: 700;
     color: var(--title-text);
@@ -113,47 +122,40 @@ a:hover {
     border-radius: 0;
 }
 
-/* --- Phần List Story (Nội dung chính) --- */
-.list-story {
-    flex: 1;
-    max-width: 960px;
-    margin: 3rem auto;
+.story-title {
+    text-align: center;
+}
+
+/* --- CONTAINER CHÍNH --- */
+.story-content-wrapper {
+    /* 1. Kích hoạt Flexbox */
+    display: flex; 
+    /* 2. Đảm bảo các mục con nằm ngang (mặc định) */
+    flex-direction: row; 
+    /* 3. Thêm khoảng cách giữa hai khối (tùy chọn) */
+    gap: 20px; /* Khoảng cách giữa van-an và chap */
+    /* 4. Thêm chiều rộng tối đa và căn giữa cho toàn bộ container */
+    max-width: 1200px; /* Đặt chiều rộng tối đa phù hợp */
+    margin: 3rem auto; /* Căn giữa */
+    padding: 0 20px; /* Thêm padding ngang cho container */
+}
+
+/* --- Văn án & Danh sách chương --- */
+.van-an,
+.chap {
+    /* 1. Cho phép hai khối "chiếm" không gian ngang bằng nhau */
+    flex: 1; /* Thay vì max-width cố định */
+
+    /* Giữ lại các kiểu dáng đã có (background, border, padding...) */
     padding: 2rem;
     background-color: var(--dark-bg-alt);
     border-radius: 8px;
     border: 1px solid var(--border-color);
-}
 
-.list-story h1 {
-    font-size: 3rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--accent-color);
-    color: var(--accent-color);
-    text-align: center;
-}
-
-.list-story h2 {
-    font-size: 1.8rem;
-    margin: 1.5rem 0;
-    padding: 1rem;
-    background-color: var(--dark-bg);
-    border-left: 4px solid var(--accent-color);
-    transition: all 0.3s ease;
-}
-
-.list-story h2:hover {
-    background-color: #2c313a;
-    transform: translateX(8px);
-}
-
-.list-story h2 a {
-    color: var(--link-color);
-    text-decoration: none;
-}
-
-.list-story h2 a:hover {
-    color: var(--accent-color);
+    /* Loại bỏ max-width và margin: 3rem auto; đã có trên khối con
+       vì chúng đã được xử lý bởi container cha (.story-content-wrapper) */
+    margin: 0; /* Đặt lại margin về 0 cho khối con */
+    max-width: none; /* Bỏ giới hạn chiều rộng cũ */
 }
 
 /* --- Footer (Chân trang) --- */
