@@ -1,0 +1,48 @@
+/* --- Phần Navigation (Menu) --- */
+/* Bố cục nav: avatar trái, menu phải */
+.site-nav .container,
+.nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Avatar nhỏ */
+.nav-avatar img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+    margin-top: 0.6rem;
+}
+
+.nav-avatar:hover img {
+    transform: scale(1.1);
+}
+
+/* Link menu bên phải */
+.nav-links a {
+    color: white;
+    padding: 0.5rem 1rem;
+    font-family: 'ArcadeAmong', sans-serif;
+    font-size: 20px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.nav-links a:hover {
+    background-color: #56d0c4;
+    color: black;
+    box-shadow: 2px 2px 0 #000;
+    border-radius: 0;
+}
+
+.site-nav {
+    background-color: #495057;
+    padding: 0.5rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-color);
+}
