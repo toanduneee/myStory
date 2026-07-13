@@ -1,51 +1,112 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <title>My Story</title>
+    <title>Đọc Truyện</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .story-content p {
+            margin-bottom: 1.5rem;
+            text-indent: 1.5rem;
+        }
+    </style>
 </head>
-<body>
-    <!-- ======================= NAVIGATION ======================= -->
-    <nav class="site-nav">
-        <div class="container nav-content">
-            <a href="/" class="nav-avatar">
-                <img src="/images/avatar.png" alt="avatar" />
-            </a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/about/">About me</a>
-            </div>
-        </div>
+<body class="bg-[#f4f1ea] dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300 font-serif min-h-screen flex flex-col">
+
+    <!-- Thanh Navigation -->
+    <nav class="max-w-3xl mx-auto w-full py-4 px-6 mb-4 flex justify-between items-center border-b border-gray-300 dark:border-gray-700">
+        <a href="/" class="text-blue-600 dark:text-blue-400 hover:underline font-sans font-semibold">
+            &larr; Mục lục
+        </a>
+        <h1 class="text-lg font-bold font-sans">Tên Truyện</h1>
     </nav>
 
-    <div class="story-title">
-        <h1>Truyện 1</h1>
-    </div>
-
-    <!--  CONTENT WRAPPER -->
-    <div class="story-content-wrapper">
-        <div class="van-an">
-            <h2>Giới thiệu truyện</h2>
-            <p>bkadncksvnksvnksvnsknvfkvnfsvslkvslsvlkdsvnlsv</p>
+    <!-- Khu vực hiển thị truyện -->
+    <main class="max-w-3xl mx-auto w-full px-6 pb-10 flex-grow">
+        <h2 id="chapter-title" class="text-3xl font-bold mb-10 text-center">Chương ...</h2>
+        
+        <div id="truyen-container" class="story-content text-lg leading-loose text-justify">
+            <p class="text-center text-gray-500 italic">Đang tải nội dung truyện...</p>
         </div>
 
-        <div class="chap">
-            <h2>Danh sách chương</h2>
-            <h3>1. <a href="1">Truyện 1 - Chap 1</a></h3>
-            <h3>2. <a href="2">Truyện 1 - Chap 2</a></h3>
-            <h3>3. <a href="3">Truyện 1 - Chap 3</a></h3>
+        <!-- 2 Nút Chuyển Chương -->
+        <div class="mt-12 flex justify-between items-center font-sans">
+            <!-- Nút trước: Mặc định ẩn, sẽ hiện nếu chương > 1 -->
+            <a id="btn-prev" href="#" class="px-6 py-2 bg-gray-200 dark:bg-gray-800 rounded shadow hover:bg-gray-300 dark:hover:bg-gray-700 transition invisible">
+                &larr; Chương trước
+            </a>
+            
+            <!-- Nút sau: Mặc định ẩn, sẽ hiện nếu load file txt thành công -->
+            <a id="btn-next" href="#" class="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition invisible">
+                Chương sau &rarr;
+            </a>
         </div>
-    </div>
+    </main>
 
-    <!-- ======================= FOOTER ======================= -->
-    <footer class="site-footer">
-        <div class="container">
-            <p>© 2025 - n0t4_. Mọi quyền được bảo lưu.</p>
-        </div>
-    </footer>
+    <!-- Cơ chế xử lý logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Lấy số chương từ URL (ví dụ URL là: .../index.html?ch=2)
+            const urlParams = new URLSearchParams(window.location.search);
+            // Nếu URL không có '?ch=', mặc định load chương 1
+            let currentChapter = parseInt(urlParams.get('ch')) || 1;
 
+            // 2. Đổi tiêu đề trên màn hình
+            document.getElementById('chapter-title').innerText = 'Chương ' + currentChapter;
+
+            // 3. Xử lý logic nút "Chương trước"
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            if (currentChapter > 1) {
+                btnPrev.href = '?ch=' + (currentChapter - 1);
+                btnPrev.classList.remove('invisible'); // Hiện nút nếu chương hiện tại >= 2
+            }
+
+            // 4. Tạo đường dẫn tới file txt và Fetch nội dung
+            const filePath = currentChapter + '/noidung.txt';
+            
+            fetch(filePath)
+                .then(response => {
+                    // Nếu file không tồn tại (chưa viết tới chương này)
+                    if (!response.ok) {
+                        throw new Error('Chưa có chương này!');
+                    }
+                    
+                    // Nếu file có thật, tức là có truyện để đọc -> Gắn link cho nút "Chương sau" và hiện nó lên
+                    btnNext.href = '?ch=' + (currentChapter + 1);
+                    btnNext.classList.remove('invisible');
+                    
+                    return response.text();
+                })
+                .then(text => {
+                    // Tách đoạn văn và xử lý cả dấu xuống dòng của Windows/Mac
+                    const paragraphs = text.split(/\r?\n/).filter(p => p.trim() !== '');
+                    const htmlContent = paragraphs.map(p => `<p>${p}</p>`).join('');
+                    
+                    document.getElementById('truyen-container').innerHTML = htmlContent;
+                })
+                .catch(error => {
+                    // Hiển thị thông báo nếu chương không tồn tại (ví dụ: Hết truyện)
+                    document.getElementById('truyen-container').innerHTML = 
+                        `<p class="text-gray-500 text-center italic mt-10">Đang cập nhật hoặc đã hết truyện...</p>`;
+                    // Cố tình ẩn nút "Chương sau" đi
+                    btnNext.classList.add('invisible');
+                });
+        });
+    </script>
 </body>
 </html>
