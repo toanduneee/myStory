@@ -1,62 +1,148 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <title>My Story</title>
-</head>
+    <title>Kho Truyện - n0t4_</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Khai báo bảng màu One Dark */
+        :root {
+            --dark-bg: #282c34;
+            --dark-bg-alt: #21252b;
+            --light-text: #abb2bf;
+            --title-text: #ffffff;
+            --link-color: #61afef;
+            --border-color: #3e4451;
+        }
+    </style>
 
-<body>
-    <!-- ======================= NAVIGATION ======================= -->
-    <nav class="site-nav">
-        <div class="container nav-content">
-            <a href="/" class="nav-avatar">
-                <img src="/images/avatar.png" alt="avatar" />
+    <script>
+        // Móc nối biến CSS vào Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'theme-bg': 'var(--dark-bg)',
+                        'theme-bg-alt': 'var(--dark-bg-alt)',
+                        'theme-text': 'var(--light-text)',
+                        'theme-title': 'var(--title-text)',
+                        'theme-link': 'var(--link-color)',
+                        'theme-border': 'var(--border-color)',
+                    },
+                    fontFamily: {
+                        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'], 
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-theme-bg text-theme-text font-sans min-h-screen">
+
+    <!-- ======================= BẮT ĐẦU NAVIGATION (MENU) ======================= -->
+    <nav class="bg-theme-bg-alt border-b border-theme-border sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="/" class="block w-10 h-10 rounded-full overflow-hidden border-2 border-theme-border hover:scale-110 transition-transform duration-200 shadow-lg">
+                <img src="images/avatar.png" alt="avatar" class="w-full h-full object-cover" />
             </a>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/about/">About me</a>
+            <div class="flex gap-6 font-semibold text-sm tracking-wide uppercase">
+                <a href="/" class="text-theme-text hover:text-theme-link transition-colors">Home</a>
+                <a href="/about/" class="text-theme-text hover:text-theme-link transition-colors">About me</a>
             </div>
         </div>
     </nav>
+    <!-- ======================= KẾT THÚC NAVIGATION (MENU) ======================= -->
 
-    <!-- ======================= LIST ======================= -->
-    <div class="list-story">
-        <h1>
-            LIST
-        </h1>
-        <h2>
-            1. <a href="stories/test-truyen">Cái này test rồi nè</a>
-        </h2>
-        <h2>
-            2. <a href="stories/test1">TESTTTT</a>
-        </h2>
-        <h2>
-            3. <a href="stories/Test2">TESTTTT</a>
-        </h2>
-        <h2>
-            4. <a href="stories/Test3">TESTTTT</a>
-        </h2>
-        <h2>
-            5. <a href="stories/Test4">TESTTTT</a>
-        </h2>
-        <h2>
-            6. <a href="stories/Test5">TESTTTT</a>
-        </h2>
-    </div>
+    <!-- ======================= BẮT ĐẦU HEADER (ĐẦU TRANG) ======================= -->
+    <header class="max-w-4xl mx-auto w-full py-16 px-6 mb-4 text-center">
+        <h1 class="text-5xl font-bold tracking-tight text-theme-title mb-4">n0t4_</h1>
+        <p class="text-lg text-theme-text opacity-90">
+            Hi guys! My name is <span class="text-theme-link font-bold">n0t4_</span>. And welcome to my blog.
+        </p>
+    </header>
+    <!-- ======================= KẾT THÚC HEADER (ĐẦU TRANG) ======================== -->
 
-
-
-    <!-- ======================= FOOTER ======================= -->
-    <footer class="site-footer">
-        <div class="container">
-            <p>© 2025 - n0t4_. Mọi quyền được bảo lưu.</p>
+    <!-- Khu vực Danh sách truyện -->
+    <main class="max-w-4xl mx-auto w-full px-6 pb-20">
+        <div id="danh-sach-truyen" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <p class="text-theme-text opacity-70 col-span-full text-center" id="loading-text">Đang tải danh sách truyện...</p>
         </div>
-    </footer>
+    </main>
 
+    <!-- Logic tải truyện -->
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            
+            // Danh sách các thư mục truyện
+            const cacThuMucTruyen = [
+                "test-truyen",
+                "truyen-2"
+            ];
+
+            const container = document.getElementById('danh-sach-truyen');
+
+            if (cacThuMucTruyen.length === 0) {
+                container.innerHTML = `<p class="text-theme-text opacity-70 col-span-full text-center">Tủ sách đang trống.</p>`;
+                return;
+            }
+
+            try {
+                const promises = cacThuMucTruyen.map(thuMuc =>
+                    fetch(`stories/${thuMuc}/info.json`)
+                        .then(res => {
+                            if (!res.ok) throw new Error(`Không tìm thấy info.json trong ${thuMuc}`);
+                            return res.json();
+                        })
+                        .then(data => ({ ...data, thuMuc: thuMuc }))
+                        .catch(err => {
+                            console.error(err);
+                            return null;
+                        })
+                );
+
+                const ketQuaFetch = await Promise.all(promises);
+                const danhSachTruyen = ketQuaFetch.filter(item => item !== null);
+
+                if (danhSachTruyen.length === 0) {
+                    container.innerHTML = `<p class="text-theme-text opacity-70 col-span-full text-center">Không tải được thông tin truyện nào.</p>`;
+                    return;
+                }
+
+                // Đổ ra giao diện với các class màu mới
+                const html = danhSachTruyen.map(truyen => `
+                    <div class="p-6 bg-theme-bg-alt rounded-xl border border-theme-border flex flex-col justify-between shadow-lg">
+                        <div>
+                            <h2 class="text-2xl font-bold text-theme-title mb-2">
+                                ${truyen.tenTruyen}
+                            </h2>
+                            <div class="flex flex-wrap gap-2 text-xs mb-4 font-medium">
+                                <span class="bg-theme-bg text-theme-text border border-theme-border px-2 py-1 rounded">
+                                    ${truyen.theLoai}
+                                </span>
+                                <span class="bg-theme-bg text-theme-link border border-theme-border px-2 py-1 rounded">
+                                    ${truyen.trangThai}
+                                </span>
+                            </div>
+                            <p class="text-theme-text leading-relaxed text-sm mb-6 line-clamp-3">
+                                ${truyen.tomTat}
+                            </p>
+                        </div>
+                        
+                        <a href="stories/${truyen.thuMuc}/index.html?ch=1"
+                            class="inline-block text-center w-full px-4 py-2 bg-theme-link text-theme-bg-alt rounded font-semibold hover:opacity-90 transition-opacity">
+                            Đọc Ngay
+                        </a>
+                    </div>
+                `).join('');
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-400 col-span-full text-center">Lỗi hệ thống khi tải truyện.</p>`;
+            }
+        });
+    </script>
 </body>
-
 </html>

@@ -1,109 +1,204 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đọc Truyện</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --dark-bg: #282c34;
+            --dark-bg-alt: #21252b;
+            --light-text: #abb2bf;
+            --title-text: #ffffff;
+            --link-color: #61afef;
+            --border-color: #3e4451;
+        }
+        
+        .story-content p {
+            margin-bottom: 1.5rem;
+            text-indent: 1.5rem;
+        }
+
+        /* Tùy chỉnh thanh cuộn cho Sidebar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--dark-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--light-text); }
+    </style>
+
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
+                    colors: {
+                        'theme-bg': 'var(--dark-bg)',
+                        'theme-bg-alt': 'var(--dark-bg-alt)',
+                        'theme-text': 'var(--light-text)',
+                        'theme-title': 'var(--title-text)',
+                        'theme-link': 'var(--link-color)',
+                        'theme-border': 'var(--border-color)',
+                    },
                     fontFamily: {
                         serif: ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+                        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'], 
                     }
                 }
             }
         }
     </script>
-    <style>
-        .story-content p {
-            margin-bottom: 1.5rem;
-            text-indent: 1.5rem;
-        }
-    </style>
 </head>
-<body class="bg-[#f4f1ea] dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300 font-serif min-h-screen flex flex-col">
+<body class="bg-theme-bg text-theme-text font-serif min-h-screen flex flex-col relative overflow-x-hidden">
 
-    <!-- Thanh Navigation -->
-    <nav class="max-w-3xl mx-auto w-full py-4 px-6 mb-4 flex justify-between items-center border-b border-gray-300 dark:border-gray-700">
-        <a href="/" class="text-blue-600 dark:text-blue-400 hover:underline font-sans font-semibold">
-            &larr; Mục lục
-        </a>
-        <h1 class="text-lg font-bold font-sans">Tên Truyện</h1>
+    <!-- OVERLAY NỀN ĐEN KHI MỞ SIDEBAR -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-40 hidden transition-opacity"></div>
+
+    <!-- SIDEBAR CHỌN CHƯƠNG -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-72 bg-theme-bg-alt border-r border-theme-border transform -translate-x-full transition-transform duration-300 z-50 flex flex-col font-sans shadow-2xl">
+        <div class="p-4 border-b border-theme-border flex justify-between items-center bg-theme-bg">
+            <h3 class="font-bold text-theme-title text-lg">Danh sách chương</h3>
+            <button id="btn-close-sidebar" class="text-theme-text hover:text-red-400 text-2xl leading-none">&times;</button>
+        </div>
+        <!-- Vùng chứa danh sách chương (có thanh cuộn) -->
+        <div id="chapter-list" class="flex-1 overflow-y-auto p-4 flex flex-col gap-1 scroll-smooth">
+            <p class="text-sm italic opacity-70">Đang tải...</p>
+        </div>
+    </aside>
+
+    <!-- THANH NAVIGATION CHÍNH -->
+    <nav class="max-w-3xl mx-auto w-full py-4 px-6 mb-4 flex justify-between items-center border-b border-theme-border font-sans sticky top-0 bg-theme-bg z-30 shadow-sm">
+        <div class="flex items-center gap-4">
+            <a href="/" class="text-theme-link hover:underline font-semibold" title="Về trang chủ">
+                &larr; Mục lục
+            </a>
+            <button id="btn-open-sidebar" class="px-3 py-1 bg-theme-bg-alt border border-theme-border rounded text-sm hover:text-theme-title transition-colors flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                Chương
+            </button>
+        </div>
+        <h1 id="story-name" class="text-lg font-bold text-theme-title tracking-wide truncate max-w-[50%] text-right">Đang tải...</h1>
     </nav>
 
-    <!-- Khu vực hiển thị truyện -->
+    <!-- KHU VỰC HIỂN THỊ NỘI DUNG -->
     <main class="max-w-3xl mx-auto w-full px-6 pb-10 flex-grow">
-        <h2 id="chapter-title" class="text-3xl font-bold mb-10 text-center">Chương ...</h2>
+        <h2 id="chapter-title" class="text-3xl font-bold mb-10 text-center text-theme-title font-sans">Chương ...</h2>
         
         <div id="truyen-container" class="story-content text-lg leading-loose text-justify">
-            <p class="text-center text-gray-500 italic">Đang tải nội dung truyện...</p>
+            <p class="text-center text-theme-text opacity-70 italic font-sans">Đang tải nội dung truyện...</p>
         </div>
 
-        <!-- 2 Nút Chuyển Chương -->
+        <!-- 2 Nút Chuyển Chương Cuối Trang -->
         <div class="mt-12 flex justify-between items-center font-sans">
-            <!-- Nút trước: Mặc định ẩn, sẽ hiện nếu chương > 1 -->
-            <a id="btn-prev" href="#" class="px-6 py-2 bg-gray-200 dark:bg-gray-800 rounded shadow hover:bg-gray-300 dark:hover:bg-gray-700 transition invisible">
+            <a id="btn-prev" href="#" class="px-6 py-2 bg-theme-bg-alt border border-theme-border text-theme-text rounded hover:bg-theme-border transition-colors invisible">
                 &larr; Chương trước
             </a>
-            
-            <!-- Nút sau: Mặc định ẩn, sẽ hiện nếu load file txt thành công -->
-            <a id="btn-next" href="#" class="px-6 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition invisible">
+            <a id="btn-next" href="#" class="px-6 py-2 bg-theme-link text-theme-bg-alt rounded font-semibold hover:opacity-90 transition-opacity invisible">
                 Chương sau &rarr;
             </a>
         </div>
     </main>
 
-    <!-- Cơ chế xử lý logic -->
+    <!-- JAVASCRIPT XỬ LÝ LOGIC -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. Lấy số chương từ URL (ví dụ URL là: .../index.html?ch=2)
+            
+            // 1. LẤY SỐ CHƯƠNG HIỆN TẠI TỪ URL
             const urlParams = new URLSearchParams(window.location.search);
-            // Nếu URL không có '?ch=', mặc định load chương 1
             let currentChapter = parseInt(urlParams.get('ch')) || 1;
-
-            // 2. Đổi tiêu đề trên màn hình
             document.getElementById('chapter-title').innerText = 'Chương ' + currentChapter;
 
-            // 3. Xử lý logic nút "Chương trước"
+            // 2. FETCH INFO.JSON: LẤY TÊN TRUYỆN & RENDER SIDEBAR
+            fetch('info.json')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('story-name').innerText = data.tenTruyen;
+
+                    const totalChapters = data.tongSoChuong || currentChapter;
+                    let sidebarHtml = '';
+
+                    for(let i = 1; i <= totalChapters; i++) {
+                        const isActive = (i === currentChapter);
+                        const activeClass = isActive 
+                            ? 'bg-theme-link text-theme-bg-alt font-bold shadow' 
+                            : 'text-theme-text hover:bg-theme-border hover:text-theme-title';
+                        
+                        // Gắn thêm ID "active-chapter" cho chương hiện tại để cuộn đến
+                        const idAttr = isActive ? 'id="active-chapter"' : '';
+                            
+                        sidebarHtml += `
+                            <a ${idAttr} href="?ch=${i}" class="block px-4 py-2 rounded transition-colors ${activeClass}">
+                                Chương ${i}
+                            </a>
+                        `;
+                    }
+                    document.getElementById('chapter-list').innerHTML = sidebarHtml;
+                })
+                .catch(err => {
+                    console.error("Lỗi tải info.json", err);
+                    document.getElementById('story-name').innerText = "Lỗi tải thông tin";
+                    document.getElementById('chapter-list').innerHTML = `<p class="text-red-400 px-4">Lỗi tải danh sách</p>`;
+                });
+
+            // 3. LOGIC SIDEBAR (MỞ / ĐÓNG / TỰ ĐỘNG CUỘN)
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const btnOpen = document.getElementById('btn-open-sidebar');
+            const btnClose = document.getElementById('btn-close-sidebar');
+
+            function openSidebar() {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+
+                // Dùng setTimeout (50ms) để chờ CSS transition của Sidebar bắt đầu chạy
+                // Tránh lỗi scroll khi element vẫn đang bị ẩn (hidden)
+                setTimeout(() => {
+                    const activeEl = document.getElementById('active-chapter');
+                    if (activeEl) {
+                        // Trượt mượt mà đến đúng vị trí của thẻ (block: 'center' để thẻ nằm giữa màn hình)
+                        activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 50);
+            }
+
+            function closeSidebar() {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+
+            btnOpen.addEventListener('click', openSidebar);
+            btnClose.addEventListener('click', closeSidebar);
+            overlay.addEventListener('click', closeSidebar);
+
+            // 4. LOGIC NÚT BẤM (CHUYỂN CHƯƠNG BÊN DƯỚI)
             const btnPrev = document.getElementById('btn-prev');
             const btnNext = document.getElementById('btn-next');
 
             if (currentChapter > 1) {
                 btnPrev.href = '?ch=' + (currentChapter - 1);
-                btnPrev.classList.remove('invisible'); // Hiện nút nếu chương hiện tại >= 2
+                btnPrev.classList.remove('invisible'); 
             }
 
-            // 4. Tạo đường dẫn tới file txt và Fetch nội dung
+            // 5. FETCH NỘI DUNG TRUYỆN TỪ FILE TXT
             const filePath = currentChapter + '/noidung.txt';
             
             fetch(filePath)
                 .then(response => {
-                    // Nếu file không tồn tại (chưa viết tới chương này)
-                    if (!response.ok) {
-                        throw new Error('Chưa có chương này!');
-                    }
+                    if (!response.ok) throw new Error('Chưa có chương này!');
                     
-                    // Nếu file có thật, tức là có truyện để đọc -> Gắn link cho nút "Chương sau" và hiện nó lên
                     btnNext.href = '?ch=' + (currentChapter + 1);
                     btnNext.classList.remove('invisible');
                     
                     return response.text();
                 })
                 .then(text => {
-                    // Tách đoạn văn và xử lý cả dấu xuống dòng của Windows/Mac
                     const paragraphs = text.split(/\r?\n/).filter(p => p.trim() !== '');
                     const htmlContent = paragraphs.map(p => `<p>${p}</p>`).join('');
-                    
                     document.getElementById('truyen-container').innerHTML = htmlContent;
                 })
                 .catch(error => {
-                    // Hiển thị thông báo nếu chương không tồn tại (ví dụ: Hết truyện)
                     document.getElementById('truyen-container').innerHTML = 
-                        `<p class="text-gray-500 text-center italic mt-10">Đang cập nhật hoặc đã hết truyện...</p>`;
-                    // Cố tình ẩn nút "Chương sau" đi
+                        `<p class="text-theme-text opacity-70 text-center italic mt-10 font-sans">Đang cập nhật nội dung hoặc đã hết truyện...</p>`;
                     btnNext.classList.add('invisible');
                 });
         });

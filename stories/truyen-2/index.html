@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đọc Truyện</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --dark-bg: #282c34;
+            --dark-bg-alt: #21252b;
+            --light-text: #abb2bf;
+            --title-text: #ffffff;
+            --link-color: #61afef;
+            --border-color: #3e4451;
+        }
+        
+        .story-content p {
+            margin-bottom: 1.5rem;
+            text-indent: 1.5rem;
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'theme-bg': 'var(--dark-bg)',
+                        'theme-bg-alt': 'var(--dark-bg-alt)',
+                        'theme-text': 'var(--light-text)',
+                        'theme-title': 'var(--title-text)',
+                        'theme-link': 'var(--link-color)',
+                        'theme-border': 'var(--border-color)',
+                    },
+                    fontFamily: {
+                        serif: ['ui-serif', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
+                        sans: ['ui-sans-serif', 'system-ui', 'sans-serif'], 
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-theme-bg text-theme-text font-serif min-h-screen flex flex-col">
+
+    <!-- Thanh Navigation -->
+    <nav class="max-w-3xl mx-auto w-full py-4 px-6 mb-4 flex justify-between items-center border-b border-theme-border font-sans">
+        <a href="/" class="text-theme-link hover:underline font-semibold">
+            &larr; Mục lục
+        </a>
+        <h1 id="story-name" class="text-lg font-bold text-theme-title tracking-wide">Đang tải...</h1>
+    </nav>
+
+    <!-- Khu vực hiển thị truyện -->
+    <main class="max-w-3xl mx-auto w-full px-6 pb-10 flex-grow">
+        <h2 id="chapter-title" class="text-3xl font-bold mb-10 text-center text-theme-title font-sans">Chương ...</h2>
+        
+        <div id="truyen-container" class="story-content text-lg leading-loose text-justify">
+            <p class="text-center text-theme-text opacity-70 italic font-sans">Đang tải nội dung truyện...</p>
+        </div>
+
+        <!-- 2 Nút Chuyển Chương -->
+        <div class="mt-12 flex justify-between items-center font-sans">
+            <a id="btn-prev" href="#" class="px-6 py-2 bg-theme-bg-alt border border-theme-border text-theme-text rounded hover:bg-theme-border transition-colors invisible">
+                &larr; Chương trước
+            </a>
+            
+            <a id="btn-next" href="#" class="px-6 py-2 bg-theme-link text-theme-bg-alt rounded font-semibold hover:opacity-90 transition-opacity invisible">
+                Chương sau &rarr;
+            </a>
+        </div>
+    </main>
+
+    <!-- Cơ chế xử lý logic -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Tự động lấy tên truyện từ thư mục
+            const path = window.location.pathname;
+            const pathSegments = path.split('/').filter(segment => segment !== '' && !segment.includes('.html'));
+            const rawFolderName = pathSegments[pathSegments.length - 1]; 
+            
+            if (rawFolderName) {
+                const formattedName = rawFolderName
+                    .split('-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                document.getElementById('story-name').innerText = formattedName;
+            }
+
+            // 2. Load số chương
+            const urlParams = new URLSearchParams(window.location.search);
+            let currentChapter = parseInt(urlParams.get('ch')) || 1;
+            document.getElementById('chapter-title').innerText = 'Chương ' + currentChapter;
+
+            // 3. Logic nút bấm
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            if (currentChapter > 1) {
+                btnPrev.href = '?ch=' + (currentChapter - 1);
+                btnPrev.classList.remove('invisible'); 
+            }
+
+            // 4. Fetch nội dung txt
+            const filePath = currentChapter + '/noidung.txt';
+            
+            fetch(filePath)
+                .then(response => {
+                    if (!response.ok) throw new Error('Chưa có chương này!');
+                    
+                    btnNext.href = '?ch=' + (currentChapter + 1);
+                    btnNext.classList.remove('invisible');
+                    
+                    return response.text();
+                })
+                .then(text => {
+                    const paragraphs = text.split(/\r?\n/).filter(p => p.trim() !== '');
+                    const htmlContent = paragraphs.map(p => `<p>${p}</p>`).join('');
+                    
+                    document.getElementById('truyen-container').innerHTML = htmlContent;
+                })
+                .catch(error => {
+                    document.getElementById('truyen-container').innerHTML = 
+                        `<p class="text-theme-text opacity-70 text-center italic mt-10 font-sans">Đang cập nhật hoặc đã hết truyện...</p>`;
+                    btnNext.classList.add('invisible');
+                });
+        });
+    </script>
+</body>
+</html>
